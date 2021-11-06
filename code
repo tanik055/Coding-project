@@ -1,0 +1,83 @@
+
+#include<stdio.h>
+#include<math.h>
+#include<stdlib.h>
+
+main()
+{
+	float fsk,fsd,fdk,fdd,vf_k,vback_k,vf_d, vback_d,epsd,epsk,pid,pik,f,K,repsk,repsd,rpik,rpid, x,t,vf,lambda,Fc,rate_sum,delt,vc,puk,pbk,pud,pbd,tmax, nu1;
+	 fdk=fdd=3.0, epsk=epsd=1;
+int i,nplus,nminus,N,k,num1,num2;
+vf_k=1.0,vback_k=0.1,fsk=fsd=1, pid=pik=5;    //parameter
+
+// as this is a symmetric case we are considering rate of plus and minus directed motor as equal
+f=fsk/fdk;
+K= epsk/pik;
+//printf("%f \n",K);
+N=5;  tmax=25.0; i=1; t=0, x=0; int j=0;
+ nplus=5,nminus=5;  
+while (t<tmax)
+{  
+
+if(nplus*fsk>nminus*fsd)
+{ lambda= 1.0 / ((nplus*fsk+vback_k + nminus*fsd*vf_k));
+Fc=nplus*nminus*fsd*fsk*(vf_k+vback_k)*lambda;
+//printf("%f \n", Fc);
+}
+else if(nplus*fsk<nminus*fsd)
+{ lambda= 1/ ((nplus*fsk+vf_k + nminus*fsd*vback_k));
+Fc=nplus*nminus*fsd*fsk*(vf_k+vback_k)*lambda;
+}
+else 
+{Fc=0;
+}
+//printf("%d \t %d \t %f \n",nplus,nminus,Fc);
+
+//calculating rates
+repsk=nplus*epsk*exp(Fc/(nplus*fdk));
+repsd=nminus*epsd*exp(Fc/(nminus*fdd));
+rpik=pik*(N-nplus);
+rpid=pid*(N-nminus);
+rate_sum= repsk+repsd+rpik+rpid;
+//printf("%f \n",rpid);
+puk= repsk/rate_sum;
+pud= repsd/rate_sum;
+pbk= rpik/rate_sum;
+pbd= rpid/rate_sum;
+
+ num1=rand()%100;
+ nu1=num1*0.01;
+ //printf("%f \n", nu1 );
+//printf("%f \t %f \t %f \t %f \n", puk,pud,pbk,pbd);
+if(nu1<puk)
+{ nplus=nplus-1;
+}
+else if(nu1> puk && nu1< (puk+pbk))
+{ nplus= nplus+1;
+}
+else if(nu1 > (puk+pbk) && nu1 < (puk+pbk+pud))
+{ nminus= nminus-1;
+}
+else 
+{ nminus= nminus+1;
+}
+//printf("%f \t %d \n", nu1, nminus );
+num2=rand()%100 ;
+delt= (1/ (rate_sum))* -1*log(num2*0.01);
+t=t+delt;
+//printf("%f \n", t);
+if(nplus*fsk>nminus*fsd)
+{ vc = ( (nplus*fsk-nminus*fsd)*vback_k*vf_k) /(nplus*fsk+vback_k + nminus*fsd*vf_k);
+}
+else if(nplus*fsk<nminus*fsd)
+{ vc = ( (nplus*fsk-nminus*fsd)*vback_k*vf_k) /(nplus*fsk+vf_k + nminus*fsd*vback_k);
+} 
+
+x=x+ vc*delt; 
+printf("%f \t %f \n", x,t );
+
+//fprintf(bs1,"%f \t %f \n",x,t);
+}
+
+}
+
